@@ -7,7 +7,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func ExtractPageUrls(puc PageURLChan) UrlChan {
+func ExtractPageUrls(puc PaginationURLChan) UrlChan {
 	var err error
 
 	urlChan := make(UrlChan, 10000000)

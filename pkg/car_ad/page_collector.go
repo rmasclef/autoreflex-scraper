@@ -10,8 +10,8 @@ import (
 	"github.com/rmasclef/autoreflex_scraper/pkg/car_brand"
 )
 
-func ExtractPages(brandChan car_brand.Chan) PageURLChan {
-	pg := make(PageURLChan, 1000)
+func ExtractPages(brandChan car_brand.Chan) PaginationURLChan {
+	pg := make(PaginationURLChan, 1000)
 
 	go func() {
 		defer close(pg)
@@ -25,23 +25,24 @@ func ExtractPages(brandChan car_brand.Chan) PageURLChan {
 				nbPages, _ := strconv.Atoi(elt.Text)
 				for pageNumber := 1; pageNumber <= nbPages; pageNumber++ {
 					// send page list url to be scraped
-					pg <- PageURL(fmt.Sprintf(url, brand.ID, pageNumber))
+					pg <- PaginationURL(fmt.Sprintf(paginationURL, brand.ID, pageNumber))
 				}
 			})
 
 			// we scrap the first brand ad page in order to get the number of available pages
-			err := c.Visit(fmt.Sprintf("http://www.autoreflex.com"+url, brand.ID, 1))
+			err := c.Visit(fmt.Sprintf("http://www.autoreflex.com"+paginationURL, brand.ID, 1))
 			if err != nil {
 				panic(err)
 			}
 
-			c.Wait()
+			c.Wait() // FIXME that collector will not take advantage of the async feature ... make it sync
 		}
 	}()
 
 	return pg
 }
 
+// @TODO this collector is the same as car_ad ones -> make a factory or something like this
 func getNbPagesCollector() *colly.Collector {
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.autoreflex.com"),

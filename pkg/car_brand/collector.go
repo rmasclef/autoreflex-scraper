@@ -23,11 +23,6 @@ func ExtractBrands() Chan {
 					return
 				}
 
-				// only get PEUGEOT & FORD
-				if el.Text != "PEUGEOT" && el.Text != "FORD" {
-					return
-				}
-
 				// send the car brand into our carBrand chan if it does not exists yet
 				bc <- Brand{
 					ID:   el.Attr("value"),
@@ -45,6 +40,7 @@ func ExtractBrands() Chan {
 	return bc
 }
 
+// @TODO this collector is the same as car_ad ones -> make a factory or something like this
 func getCollector() *colly.Collector {
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.autoreflex.com"),
