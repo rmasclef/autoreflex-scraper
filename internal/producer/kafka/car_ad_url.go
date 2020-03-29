@@ -8,7 +8,7 @@ import (
 	"github.com/rmasclef/autoreflex_scraper/pkg/car_ad"
 )
 
-func SendURL(urlChan car_ad.UrlChan) {
+func SendURL(urlChan car_ad.URLChan) {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost:9092"})
 	if err != nil {
 		panic(err)

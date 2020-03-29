@@ -7,7 +7,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func ExtractBrands() Chan {
+func Collect() Chan {
 	bc := make(Chan, 30)
 
 	go func() {
@@ -32,7 +32,7 @@ func ExtractBrands() Chan {
 		})
 
 		err := c.Visit("http://www.autoreflex.com")
-		if err != nil {
+		if err != nil && err != colly.ErrAlreadyVisited {
 			panic(err)
 		}
 	}()

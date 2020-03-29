@@ -8,8 +8,8 @@ import (
 	"github.com/rmasclef/autoreflex_scraper/pkg/car_ad"
 )
 
-func GetAdURL() car_ad.UrlChan {
-	uc := make(car_ad.UrlChan)
+func GetAdURLs() car_ad.URLChan {
+	uc := make(car_ad.URLChan)
 
 	go func() {
 		defer close(uc)
@@ -30,12 +30,12 @@ func GetAdURL() car_ad.UrlChan {
 
 		for {
 			msg, err := c.ReadMessage(-1)
-			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
-
 			if err != nil {
 				// The client will automatically try to recover from all errors.
 				fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+				continue
 			}
+			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
 
 			uc <- string(msg.Value)
 		}

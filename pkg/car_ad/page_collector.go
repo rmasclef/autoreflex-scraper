@@ -3,47 +3,39 @@ package car_ad
 import (
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/gocolly/colly"
-
-	"github.com/rmasclef/autoreflex_scraper/pkg/car_brand"
 )
 
-func ExtractPages(brandChan car_brand.Chan) PaginationURLChan {
-	pg := make(PaginationURLChan, 1000)
+func CollectAds(urls URLChan) Chan {
+	var ac = make(Chan, 20000)
 
 	go func() {
-		defer close(pg)
+		// close the chan when all the car ads have been treated
+		defer close(ac)
 
-		// for all brands
-		for brand := range brandChan {
-			c := getNbPagesCollector()
+		for url := range urls{
 
-			// get number of pages
-			c.OnHTML("ul.pagination li:nth-last-child(2)", func(elt *colly.HTMLElement) {
-				nbPages, _ := strconv.Atoi(elt.Text)
-				for pageNumber := 1; pageNumber <= nbPages; pageNumber++ {
-					// send page list url to be scraped
-					pg <- PaginationURL(fmt.Sprintf(paginationURL, brand.ID, pageNumber))
-				}
-			})
+			// create new car ad
+			ad := &Ad{}
+			c := getCollector(ad)
 
-			// we scrap the first brand ad page in order to get the number of available pages
-			err := c.Visit(fmt.Sprintf("http://www.autoreflex.com"+paginationURL, brand.ID, 1))
-			if err != nil {
+			err := c.Visit("http://www.autoreflex.com/"+url)
+			if err != nil && err != colly.ErrAlreadyVisited {
 				panic(err)
 			}
+			// the collector will fill the ad object
+			c.Wait()
 
-			c.Wait() // FIXME that collector will not take advantage of the async feature ... make it sync
+			// once the collect is finished, we send the ad into ad chan
+			ac <- *ad
 		}
 	}()
 
-	return pg
+	return ac
 }
 
-// @TODO this collector is the same as car_ad ones -> make a factory or something like this
-func getNbPagesCollector() *colly.Collector {
+func getCollector(ad *Ad) *colly.Collector {
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.autoreflex.com"),
 		colly.Async(true),
@@ -57,7 +49,7 @@ func getNbPagesCollector() *colly.Collector {
 	//
 	// Parallelism can be controlled also by spawning fixed
 	// number of go routines.
-	err := c.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 2})
+	err := c.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 10})
 	if err != nil {
 		panic(err)
 	}
@@ -77,5 +69,21 @@ func getNbPagesCollector() *colly.Collector {
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Println("Finished", r.Request.URL)
 	})
+
+	// get Price
+	c.OnHTML("div.prix", func(elt *colly.HTMLElement) {
+		log.Println("Price found", elt.Text)
+		// @TODO extract currecy from value
+		ad.Price = elt.Text
+	})
+	// // get Modele
+	// c.OnHTML("", func(elt *colly.HTMLElement) {
+	//
+	// })
+	// // get description
+	// c.OnHTML("", func(elt *colly.HTMLElement) {
+	//
+	// })
+
 	return c
 }

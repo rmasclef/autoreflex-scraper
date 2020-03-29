@@ -1,11 +1,8 @@
 package car_ad
 
-const paginationURL = "/%s.0.-1.-1.-1.0.999999.1900.999999.-1.99.0.%d"
+type URLChan chan string
 
-type PaginationURL string
-type PaginationURLChan chan PaginationURL
-
-type UrlChan chan string
+type Chan chan Ad
 
 type Ad struct {
 	Brand string `bson:"brand"`

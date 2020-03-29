@@ -5,15 +5,15 @@ import (
 	"log"
 
 	"github.com/gocolly/colly"
+
+	"github.com/rmasclef/autoreflex_scraper/pkg/car_list"
 )
 
-func ExtractPageUrls(puc PaginationURLChan) UrlChan {
-	var err error
-
-	urlChan := make(UrlChan, 10000000)
+func CollectURLs(listURLs car_list.URLChan) URLChan {
+	uc := make(URLChan, 100000)
 
 	go func() {
-		defer close(urlChan)
+		defer close(uc)
 
 		c := getPageUrlsCollector()
 
@@ -21,17 +21,20 @@ func ExtractPageUrls(puc PaginationURLChan) UrlChan {
 		c.OnHTML("tr[star-id]>td>h2>a", func(elt *colly.HTMLElement) {
 			adUrl := elt.Attr("href")
 			fmt.Printf("ad url found : %s\n", adUrl)
-			urlChan <- adUrl
+			uc <- adUrl
 		})
 
-		for pageUrl := range puc {
+		for pageListUrl := range listURLs {
 			// scrape the current brandID/pageNumber page (containing a list of ad URLs
-			err = c.Visit("http://www.autoreflex.com"+string(pageUrl))
+			err := c.Visit("http://www.autoreflex.com"+pageListUrl)
+			if err != nil && err != colly.ErrAlreadyVisited {
+				panic(err)
+			}
 		}
 		c.Wait()
 	}()
 
-	return urlChan
+	return uc
 }
 
 func getPageUrlsCollector() *colly.Collector {
