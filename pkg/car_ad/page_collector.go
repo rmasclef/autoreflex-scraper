@@ -31,7 +31,9 @@ func CollectAds(urls URLChan) Chan {
 		for url := range urls {
 
 			// create new car ad
-			ad := &Ad{}
+			ad := &Ad{
+				URL: url,
+			}
 			c := getCollector(ad)
 
 			err := c.Visit("http://www.autoreflex.com/" + url)
@@ -99,6 +101,20 @@ func getCollector(ad *Ad) *colly.Collector {
 		})
 		// @TODO find a way to get vehicle information (i.e information that is after the brand and model)
 		// fmt.Println("-------------------------------------------------------> spec: ", elt.ChildText("*:not(a)"))
+	})
+	// get main image
+	c.OnHTML("div.pics img.photogrand", func(elt *colly.HTMLElement) {
+		ad.Images = append(ad.Images, Image{
+			URL:    elt.Attr("src"),
+			IsMain: true,
+		})
+	})
+	// get secondary images
+	c.OnHTML("div.thumbnails img.fiche-vignette", func(elt *colly.HTMLElement) {
+		ad.Images = append(ad.Images, Image{
+			URL:    elt.Attr("data-grand"),
+			IsMain: false,
+		})
 	})
 	// get Price
 	c.OnHTML("div.prix", func(elt *colly.HTMLElement) {

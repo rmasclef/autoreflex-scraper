@@ -5,6 +5,7 @@ type URLChan chan string
 type Chan chan Ad
 
 type Ad struct {
+	URL          string `bson:"url,omitempty"`
 	Location     string `bson:"location,omitempty"`
 	Brand        string `bson:"brand,omitempty"`
 	Model        string `bson:"model,omitempty"`

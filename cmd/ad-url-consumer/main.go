@@ -24,5 +24,5 @@ func getAdRepository(ctx context.Context) car_ad.Repository {
 	c := mongodb.NewClient(ctx)
 	db := c.Database("autoreflex")
 
-	return mongodb.NewCarAdRepository(db, 200)
+	return mongodb.NewCarAdRepository(db, 10)
 }
