@@ -23,7 +23,7 @@ this binary will perform the following steps :
 
 1. consume the messages produced by `ad-url-producer` from the kafka topic
 2. for each messages (i.e Ad URL) -> scrap the Ad information (still work to do here) -> transform them into an Ad model
-3. for each generated Ad -> save it into a Mongo databse (not present yet)
+3. for each generated Ad -> save it into a Mongo database
 
 ## Make it work
 
@@ -39,3 +39,7 @@ this binary will perform the following steps :
 `go run ./cmd/ad-url-producer`
 
 > NOTE Docker version is not ready yet for the consumer & producer ...
+
+## Run tests
+
+There are no tests yet ... shame on me.
